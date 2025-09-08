@@ -1,30 +1,37 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ficha de Treino - Flavio</title>
-  <link rel="stylesheet" href="styles.css">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Ficha Treino - Flavio</title>
+<link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <header>
-    <h1>📋 Ficha de Treino</h1>
-    <div class="filters">
-      <select id="treinoFilter">
-        <option value="">Todos os Treinos</option>
-      </select>
-      <select id="grupoFilter">
-        <option value="">Todos os Grupos</option>
-      </select>
+  <header class="topbar">
+    <div class="brand">📋 Ficha de Treino</div>
+    <div class="actions">
+      <button id="resetCargas" class="btn small">Resetar</button>
     </div>
   </header>
 
-  <main id="treinoContainer"></main>
+  <main class="container">
+    <section class="controls">
+      <div class="filters-row">
+        <select id="filter-treino" class="filter-select"></select>
+        <select id="filter-grupo" class="filter-select"></select>
+      </div>
+      <div class="search-row">
+        <input id="search" placeholder="Pesquisar exercício, técnica ou observação..." />
+      </div>
+    </section>
 
-  <footer>
-    <button id="resetCargas">Resetar Cargas</button>
-  </footer>
+    <section id="cards" class="grid"></section>
+  </main>
 
-  <script src="app.js"></script>
+  <footer class="footer">Versão 2.0 • Dados via Google Sheets • Cargas salvas localmente</footer>
+
+  <!-- PapaParse para parsing robusto de CSV -->
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <script src="app_v3.js"></script>
 </body>
 </html>
