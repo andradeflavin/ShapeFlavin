@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ficha de Treino</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>📋 Ficha de Treino</h1>
+    <button id="resetBtn">Resetar</button>
+  </header>
+
+  <main>
+    <div class="filters">
+      <select id="filterGrupo"></select>
+      <select id="filterDia"></select>
+      <input type="text" id="searchInput" placeholder="Pesquisar exercício, técnica ou observação..." />
+    </div>
+    <div id="exercicios"></div>
+  </main>
+
+  <footer>
+    Versão 2.0 • Dados via Google Sheets • Cargas salvas localmente
+  </footer>
+
+  <script src="app_v4.js"></script>
+</body>
+</html>

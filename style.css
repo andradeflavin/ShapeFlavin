@@ -1,0 +1,57 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #0d1b2a;
+  color: #e0e1dd;
+}
+header {
+  background: linear-gradient(90deg, #1b263b, #415a77);
+  padding: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+h1 { margin: 0; font-size: 1.2rem; }
+button {
+  background: #1b98e0;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+}
+.filters {
+  display: flex;
+  gap: 0.5rem;
+  padding: 1rem;
+}
+select, input {
+  flex: 1;
+  padding: 0.5rem;
+  border-radius: 6px;
+  border: 1px solid #415a77;
+}
+#exercicios {
+  padding: 1rem;
+  display: grid;
+  gap: 1rem;
+}
+.card {
+  background: #1b263b;
+  padding: 1rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+.card img {
+  width: 64px;
+  height: 64px;
+}
+footer {
+  text-align: center;
+  padding: 1rem;
+  font-size: 0.8rem;
+  color: #778da9;
+}
