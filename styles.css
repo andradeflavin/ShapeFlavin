@@ -1,0 +1,48 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #f7f7f7;
+  color: #333;
+}
+header {
+  background: #4CAF50;
+  color: white;
+  padding: 1rem;
+  text-align: center;
+}
+.filters {
+  margin-top: 1rem;
+}
+select {
+  margin: 0.5rem;
+  padding: 0.5rem;
+}
+.card {
+  background: white;
+  margin: 1rem;
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+.card img {
+  max-width: 100px;
+  display: block;
+  margin-top: 0.5rem;
+}
+button {
+  background: #4CAF50;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  cursor: pointer;
+}
+button:hover {
+  background: #45a049;
+}
+.timer {
+  margin-top: 0.5rem;
+  font-weight: bold;
+  color: #d9534f;
+}
