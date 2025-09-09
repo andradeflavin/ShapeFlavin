@@ -1,7 +1,6 @@
 :root {
   --primary: #2d89ef;
   --success: #4caf50;
-  --danger: #f44336;
   --bg: #ffffff;
   --text: #333;
 }
@@ -89,4 +88,4 @@ footer {
   padding: 1rem;
   background: #eee;
   margin-top: 2rem;
-} 
+}
