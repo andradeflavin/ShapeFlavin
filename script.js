@@ -2,29 +2,20 @@ const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ9b2FKBRe00n
 const fichaContainer = document.getElementById("ficha-container");
 const filtroTreino = document.getElementById("filtroTreino");
 
-// Banco de imagens confiáveis (Wikimedia/Unsplash com hotlink permitido)
-const exercicioImgs = {
-  "Supino reto": "https://upload.wikimedia.org/wikipedia/commons/5/53/Bench_Press-2.jpg",
-  "Agachamento livre": "https://upload.wikimedia.org/wikipedia/commons/4/42/Squats.gif",
-  "Puxada frente": "https://upload.wikimedia.org/wikipedia/commons/f/f6/Lat_pulldown.png",
-  "Rosca direta": "https://upload.wikimedia.org/wikipedia/commons/e/e4/Biceps_curl.gif",
-  "Elevação lateral": "https://upload.wikimedia.org/wikipedia/commons/4/4d/Lateral_raise.gif"
-};
-
-const imgDefault = "https://images.unsplash.com/photo-1517964104185-48c7ba0a78f4?auto=format&fit=crop&w=800&q=80";
-
 let treinos = {};
 
 async function carregarFicha() {
   try {
     const res = await fetch(SHEET_URL);
     const csv = await res.text();
-    const rows = csv.split("\n").map(r => r.split(","));
-    rows.shift(); // remove cabeçalho
+
+    // Parse usando PapaParse
+    const parsed = Papa.parse(csv, { header: true, skipEmptyLines: true });
+    const rows = parsed.data;
 
     treinos = {};
     rows.forEach(r => {
-      const treino = r[0];
+      const treino = r["Treino"] || "Sem nome";
       if (!treinos[treino]) treinos[treino] = [];
       treinos[treino].push(r);
     });
@@ -59,12 +50,14 @@ function renderizarFicha() {
     div.innerHTML = `<h2>Treino ${treino}</h2>`;
 
     exercicios.forEach(ex => {
-      const [treino, grupo, musc, nome, series, reps, descanso, tecnica, obs, data, cargaDefault] = ex;
+      const nome = ex["Exercício"];
       const id = nome.replace(/\s+/g, "_");
 
-      const cargaSalva = localStorage.getItem(`carga_${id}`) || cargaDefault || "";
+      const cargaSalva = localStorage.getItem(`carga_${id}`) || ex["Carga (kg)"] || "";
       const concluido = localStorage.getItem(`done_${id}`) === "true";
-      const imgUrl = exercicioImgs[nome] || imgDefault;
+
+      // Imagem dinâmica via Unsplash
+      const imgUrl = `https://source.unsplash.com/400x300/?gym,${encodeURIComponent(nome)}`;
 
       const card = document.createElement("div");
       card.className = "card";
@@ -73,13 +66,14 @@ function renderizarFicha() {
       card.innerHTML = `
         <img src="${imgUrl}" alt="Exercício ${nome}">
         <h3>${nome}</h3>
-        <small>${grupo} - ${musc}</small>
-        <p><b>Séries:</b> ${series} | <b>Reps:</b> ${reps} | <b>Descanso:</b> ${descanso}s</p>
+        <small>${ex["Grupo"]} - ${ex["Muscular"]}</small>
+        <p><b>Séries:</b> ${ex["Séries"]} | <b>Reps:</b> ${ex["Reps"]}</p>
+        <p><b>Execução:</b> ${ex["Execução / Técnica"] || "-"}<br>
+           <b>Obs:</b> ${ex["Observações"] || "-"}</p>
         <label>Carga (kg): <input type="number" id="carga_${id}" value="${cargaSalva}"></label>
         <br>
         <button class="done">${concluido ? "✅ Concluído" : "Marcar concluído"}</button>
-        <button class="timer">⏱ Iniciar descanso</button>
-        <span id="timer_${id}"></span>
+        <div class="timer-container" id="timerBox_${id}"></div>
       `;
 
       // Salvar carga
@@ -101,25 +95,33 @@ function renderizarFicha() {
         }
       });
 
-      // Timer de descanso corrigido
-      const btnTimer = card.querySelector(".timer");
-      const timerSpan = card.querySelector(`#timer_${id}`);
-      let timer;
+      // Timer só se houver descanso
+      const descanso = parseInt(ex["Descanso (s)"]);
+      if (!isNaN(descanso) && descanso > 0) {
+        const timerBox = card.querySelector(`#timerBox_${id}`);
+        timerBox.innerHTML = `
+          <button class="timer">⏱ Iniciar descanso</button>
+          <span id="timer_${id}"></span>
+        `;
 
-      btnTimer.addEventListener("click", () => {
-        clearInterval(timer);
-        let tempo = parseInt(descanso);
-        if (isNaN(tempo) || tempo <= 0) tempo = 30;
-        timerSpan.textContent = `${tempo}s`;
-        timer = setInterval(() => {
-          tempo--;
+        const btnTimer = timerBox.querySelector(".timer");
+        const timerSpan = timerBox.querySelector(`#timer_${id}`);
+        let timer;
+
+        btnTimer.addEventListener("click", () => {
+          clearInterval(timer);
+          let tempo = descanso;
           timerSpan.textContent = `${tempo}s`;
-          if (tempo <= 0) {
-            clearInterval(timer);
-            timerSpan.textContent = "✅ Descanso concluído";
-          }
-        }, 1000);
-      });
+          timer = setInterval(() => {
+            tempo--;
+            timerSpan.textContent = `${tempo}s`;
+            if (tempo <= 0) {
+              clearInterval(timer);
+              timerSpan.textContent = "✅ Descanso concluído";
+            }
+          }, 1000);
+        });
+      }
 
       div.appendChild(card);
     });
