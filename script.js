@@ -1,4 +1,6 @@
-const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ9b2FKBRe00ngdkBE8bSiC47MDdGJROwM-6FtxRy8htDIev5BZ5Z-SyxAXtz_2KzLxyHn-MiEcJaCj/pub?gid=784473971&single=true&output=csv";
+const SHEET_URL =
+  "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ9b2FKBRe00ngdkBE8bSiC47MDdGJROwM-6FtxRy8htDIev5BZ5Z-SyxAXtz_2KzLxyHn-MiEcJaCj/pub?gid=784473971&single=true&output=csv";
+
 const fichaContainer = document.getElementById("ficha-container");
 const filtroTreino = document.getElementById("filtroTreino");
 
@@ -9,12 +11,17 @@ async function carregarFicha() {
     const res = await fetch(SHEET_URL);
     const csv = await res.text();
 
-    // Parse usando PapaParse
-    const parsed = Papa.parse(csv, { header: true, skipEmptyLines: true });
+    const parsed = Papa.parse(csv, {
+      header: true,
+      skipEmptyLines: true,
+      dynamicTyping: true,
+      trimHeaders: true,
+    });
+
     const rows = parsed.data;
 
     treinos = {};
-    rows.forEach(r => {
+    rows.forEach((r) => {
       const treino = r["Treino"] || "Sem nome";
       if (!treinos[treino]) treinos[treino] = [];
       treinos[treino].push(r);
@@ -24,14 +31,14 @@ async function carregarFicha() {
     renderizarFicha();
   } catch (e) {
     fichaContainer.innerHTML = "Erro ao carregar ficha 😢";
-    console.error(e);
+    console.error("Erro no parsing:", e);
   }
 }
 
 function preencherFiltro() {
   const nomes = Object.keys(treinos);
   filtroTreino.innerHTML = `<option value="todos">Todos</option>`;
-  nomes.forEach(n => {
+  nomes.forEach((n) => {
     filtroTreino.innerHTML += `<option value="${n}">${n}</option>`;
   });
 
@@ -49,15 +56,18 @@ function renderizarFicha() {
     div.className = "treino";
     div.innerHTML = `<h2>Treino ${treino}</h2>`;
 
-    exercicios.forEach(ex => {
-      const nome = ex["Exercício"];
+    exercicios.forEach((ex) => {
+      const nome = ex["Exercício"] || "Sem nome";
       const id = nome.replace(/\s+/g, "_");
 
-      const cargaSalva = localStorage.getItem(`carga_${id}`) || ex["Carga (kg)"] || "";
+      const cargaSalva =
+        localStorage.getItem(`carga_${id}`) || ex["Carga (kg)"] || "";
       const concluido = localStorage.getItem(`done_${id}`) === "true";
 
-      // Imagem dinâmica via Unsplash
-      const imgUrl = `https://source.unsplash.com/400x300/?gym,${encodeURIComponent(nome)}`;
+      // imagem dinâmica do Unsplash
+      const imgUrl = `https://source.unsplash.com/400x300/?gym,${encodeURIComponent(
+        nome
+      )}`;
 
       const card = document.createElement("div");
       card.className = "card";
@@ -66,8 +76,10 @@ function renderizarFicha() {
       card.innerHTML = `
         <img src="${imgUrl}" alt="Exercício ${nome}">
         <h3>${nome}</h3>
-        <small>${ex["Grupo"]} - ${ex["Muscular"]}</small>
-        <p><b>Séries:</b> ${ex["Séries"]} | <b>Reps:</b> ${ex["Reps"]}</p>
+        <small>${ex["Grupo"] || "-"} - ${ex["Muscular"] || "-"}</small>
+        <p><b>Séries:</b> ${ex["Séries"] || "-"} | <b>Reps:</b> ${
+        ex["Reps"] || "-"
+      }</p>
         <p><b>Execução:</b> ${ex["Execução / Técnica"] || "-"}<br>
            <b>Obs:</b> ${ex["Observações"] || "-"}</p>
         <label>Carga (kg): <input type="number" id="carga_${id}" value="${cargaSalva}"></label>
@@ -76,12 +88,12 @@ function renderizarFicha() {
         <div class="timer-container" id="timerBox_${id}"></div>
       `;
 
-      // Salvar carga
-      card.querySelector(`#carga_${id}`).addEventListener("change", e => {
+      // salvar carga
+      card.querySelector(`#carga_${id}`).addEventListener("change", (e) => {
         localStorage.setItem(`carga_${id}`, e.target.value);
       });
 
-      // Marcar concluído
+      // marcar concluído
       const btnDone = card.querySelector(".done");
       btnDone.addEventListener("click", () => {
         const novo = !(localStorage.getItem(`done_${id}`) === "true");
@@ -95,12 +107,12 @@ function renderizarFicha() {
         }
       });
 
-      // Timer só se houver descanso
+      // cronômetro só se houver descanso
       const descanso = parseInt(ex["Descanso (s)"]);
       if (!isNaN(descanso) && descanso > 0) {
         const timerBox = card.querySelector(`#timerBox_${id}`);
         timerBox.innerHTML = `
-          <button class="timer">⏱ Iniciar descanso</button>
+          <button class="timer">⏱ Iniciar descanso (${descanso}s)</button>
           <span id="timer_${id}"></span>
         `;
 
