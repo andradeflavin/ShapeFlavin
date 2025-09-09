@@ -1,148 +1,111 @@
-// Link original
+// Link da planilha (CSV)
 const SHEET_URL =
   "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ9b2FKBRe00ngdkBE8bSiC47MDdGJROwM-6FtxRy8htDIev5BZ5Z-SyxAXtz_2KzLxyHn-MiEcJaCj/pub?gid=784473971&single=true&output=csv";
 
-// Proxy para resolver CORS
-const PROXY_URL = "https://api.allorigins.win/raw?url=" + encodeURIComponent(SHEET_URL);
+// Proxy para evitar erro de CORS
+const PROXY_URL =
+  "https://api.allorigins.win/raw?url=" + encodeURIComponent(SHEET_URL);
+
+const fichaContainer = document.getElementById("ficha");
+const treinoSelect = document.getElementById("treinoSelect");
 
 async function carregarFicha() {
   try {
     const res = await fetch(PROXY_URL);
-    if (!res.ok) throw new Error("Falha no fetch: " + res.status);
+    if (!res.ok) throw new Error("Falha ao buscar planilha");
     const csv = await res.text();
 
     const parsed = Papa.parse(csv, {
       header: true,
       skipEmptyLines: true,
-      dynamicTyping: true,
-      trimHeaders: true,
     });
-
-
 
     const rows = parsed.data;
+    if (!rows || rows.length === 0) throw new Error("Planilha vazia");
 
-    treinos = {};
-    rows.forEach((r) => {
-      const treino = r["Treino"] || "Sem nome";
-      if (!treinos[treino]) treinos[treino] = [];
-      treinos[treino].push(r);
+    // Preencher filtro de treinos
+    const treinos = [...new Set(rows.map(r => r["Treino"]).filter(Boolean))];
+    treinoSelect.innerHTML = `<option value="Todos">Todos</option>`;
+    treinos.forEach(t => {
+      treinoSelect.innerHTML += `<option value="${t}">${t}</option>`;
     });
 
-    preencherFiltro();
-    renderizarFicha();
-  } catch (e) {
-    fichaContainer.innerHTML =
-      "Erro ao carregar ficha 😢<br><small>Verifique se a planilha está publicada corretamente</small>";
-    console.error("Erro no parsing/fetch:", e);
+    // Render inicial
+    renderExercicios(rows);
+
+    treinoSelect.addEventListener("change", () => {
+      const filtro = treinoSelect.value;
+      const filtrados = filtro === "Todos" ? rows : rows.filter(r => r["Treino"] === filtro);
+      renderExercicios(filtrados);
+    });
+  } catch (err) {
+    console.error(err);
+    fichaContainer.innerHTML = `<p>Erro ao carregar ficha 😢</p><p>Verifique se a planilha está publicada corretamente.</p>`;
   }
 }
 
-function preencherFiltro() {
-  const nomes = Object.keys(treinos);
-  filtroTreino.innerHTML = `<option value="todos">Todos</option>`;
-  nomes.forEach((n) => {
-    filtroTreino.innerHTML += `<option value="${n}">${n}</option>`;
-  });
-
-  filtroTreino.addEventListener("change", renderizarFicha);
-}
-
-function renderizarFicha() {
+function renderExercicios(lista) {
   fichaContainer.innerHTML = "";
-  const filtro = filtroTreino.value;
+  if (!lista.length) {
+    fichaContainer.innerHTML = "<p>Nenhum exercício encontrado.</p>";
+    return;
+  }
 
-  Object.entries(treinos).forEach(([treino, exercicios]) => {
-    if (filtro !== "todos" && filtro !== treino) return;
-
+  lista.forEach(ex => {
     const div = document.createElement("div");
-    div.className = "treino";
-    div.innerHTML = `<h2>Treino ${treino}</h2>`;
+    div.className = "exercicio";
 
-    exercicios.forEach((ex) => {
-      const nome = ex["Exercício"] || "Sem nome";
-      const id = nome.replace(/\s+/g, "_");
+    // Usar imagem ilustrativa (pesquisa no DuckDuckGo sem CORS bloqueado)
+    const imgUrl = `https://source.unsplash.com/400x300/?gym,${encodeURIComponent(ex["Exercício"] || "workout")}`;
 
-      const cargaSalva =
-        localStorage.getItem(`carga_${id}`) || ex["Carga (kg)"] || "";
-      const concluido = localStorage.getItem(`done_${id}`) === "true";
+    div.innerHTML = `
+      <h3>${ex["Exercício"] || "Sem nome"}</h3>
+      <p><b>Grupo:</b> ${ex["Grupo Muscular"] || "-"}</p>
+      <p><b>Séries:</b> ${ex["Séries"] || "-"}</p>
+      <p><b>Reps:</b> ${ex["Reps"] || "-"}</p>
+      <p><b>Execução/Técnica:</b> ${ex["Execução / Técnica"] || "-"}</p>
+      <p><b>Observações:</b> ${ex["Observações"] || "-"}</p>
+      <p><b>Carga (kg):</b> <input type="number" min="0" value="${ex["Carga (kg)"] || 0}"></p>
+      <img src="${imgUrl}" alt="Exemplo de ${ex["Exercício"]}">
+    `;
 
-      const imgUrl = `https://source.unsplash.com/400x300/?gym,${encodeURIComponent(
-        nome
-      )}`;
+    // Botão concluir
+    const btnConcluir = document.createElement("button");
+    btnConcluir.textContent = "✔ Concluir";
+    btnConcluir.onclick = () => {
+      div.classList.toggle("concluido");
+    };
+    div.appendChild(btnConcluir);
 
-      const card = document.createElement("div");
-      card.className = "card";
-      if (concluido) card.classList.add("done");
-
-      card.innerHTML = `
-        <img src="${imgUrl}" alt="Exercício ${nome}">
-        <h3>${nome}</h3>
-        <small>${ex["Grupo"] || "-"} - ${ex["Muscular"] || "-"}</small>
-        <p><b>Séries:</b> ${ex["Séries"] || "-"} | <b>Reps:</b> ${
-        ex["Reps"] || "-"
-      }</p>
-        <p><b>Execução:</b> ${ex["Execução / Técnica"] || "-"}<br>
-           <b>Obs:</b> ${ex["Observações"] || "-"}</p>
-        <label>Carga (kg): <input type="number" id="carga_${id}" value="${cargaSalva}"></label>
-        <br>
-        <button class="done">${concluido ? "✅ Concluído" : "Marcar concluído"}</button>
-        <div class="timer-container" id="timerBox_${id}"></div>
-      `;
-
-      // salvar carga
-      card.querySelector(`#carga_${id}`).addEventListener("change", (e) => {
-        localStorage.setItem(`carga_${id}`, e.target.value);
-      });
-
-      // marcar concluído
-      const btnDone = card.querySelector(".done");
-      btnDone.addEventListener("click", () => {
-        const novo = !(localStorage.getItem(`done_${id}`) === "true");
-        localStorage.setItem(`done_${id}`, novo);
-        if (novo) {
-          card.classList.add("done");
-          btnDone.textContent = "✅ Concluído";
-        } else {
-          card.classList.remove("done");
-          btnDone.textContent = "Marcar concluído";
-        }
-      });
-
-      // cronômetro só se houver descanso
-      const descanso = parseInt(ex["Descanso (s)"]);
-      if (!isNaN(descanso) && descanso > 0) {
-        const timerBox = card.querySelector(`#timerBox_${id}`);
-        timerBox.innerHTML = `
-          <button class="timer">⏱ Iniciar descanso (${descanso}s)</button>
-          <span id="timer_${id}"></span>
-        `;
-
-        const btnTimer = timerBox.querySelector(".timer");
-        const timerSpan = timerBox.querySelector(`#timer_${id}`);
-        let timer;
-
-        btnTimer.addEventListener("click", () => {
-          clearInterval(timer);
-          let tempo = descanso;
-          timerSpan.textContent = `${tempo}s`;
-          timer = setInterval(() => {
-            tempo--;
-            timerSpan.textContent = `${tempo}s`;
-            if (tempo <= 0) {
-              clearInterval(timer);
-              timerSpan.textContent = "✅ Descanso concluído";
-            }
-          }, 1000);
-        });
-      }
-
-      div.appendChild(card);
-    });
+    // Botão cronômetro só se houver descanso
+    if (ex["Descanso (s)"]) {
+      const btnTimer = document.createElement("button");
+      btnTimer.textContent = `⏱ Descanso ${ex["Descanso (s)"]}s`;
+      btnTimer.onclick = () => iniciarTimer(ex["Descanso (s)"], btnTimer);
+      div.appendChild(btnTimer);
+    }
 
     fichaContainer.appendChild(div);
   });
 }
 
-carregarFicha();
+function iniciarTimer(segundos, botao) {
+  let restante = segundos;
+  botao.disabled = true;
+  botao.textContent = `⏱ ${restante}s`;
 
+  const interval = setInterval(() => {
+    restante--;
+    botao.textContent = `⏱ ${restante}s`;
+    if (restante <= 0) {
+      clearInterval(interval);
+      botao.textContent = "✅ Descanso finalizado!";
+      setTimeout(() => {
+        botao.disabled = false;
+        botao.textContent = `⏱ Descanso ${segundos}s`;
+      }, 2000);
+    }
+  }, 1000);
+}
+
+carregarFicha();
