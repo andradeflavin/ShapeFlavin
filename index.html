@@ -1,33 +1,24 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Ficha Treino - v6 (encoding fix)</title>
-<link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Minha Ficha de Treino</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header class="topbar">
-    <div class="brand">📋 Ficha de Treino</div>
-    <div class="actions">
-      <button id="resetCargas" class="btn small">Resetar</button>
-    </div>
+  <header>
+    <h1>🏋️ Minha Ficha de Treino</h1>
   </header>
-  <main class="container">
-    <section class="controls">
-      <div class="filters-row">
-        <select id="filter-treino" class="filter-select"></select>
-        <select id="filter-grupo" class="filter-select"></select>
-      </div>
-      <div class="search-row">
-        <input id="search" placeholder="Pesquisar exercício, técnica ou observação..." />
-      </div>
-    </section>
-    <section id="cards" class="grid"></section>
-  </main>
-  <footer class="footer">Versão 2.0 • Dados via Google Sheets • Cargas salvas localmente</footer>
 
-  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-  <script src="app_v6.js"></script>
+  <main>
+    <div id="ficha-container">Carregando ficha...</div>
+  </main>
+
+  <footer>
+    <p>Feito com 💪 por mim | Dados do Google Sheets</p>
+  </footer>
+
+  <script src="script.js"></script>
 </body>
 </html>
