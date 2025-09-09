@@ -1,15 +1,9 @@
-// Link original do Sheets
+// Link original
 const SHEET_URL =
   "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ9b2FKBRe00ngdkBE8bSiC47MDdGJROwM-6FtxRy8htDIev5BZ5Z-SyxAXtz_2KzLxyHn-MiEcJaCj/pub?gid=784473971&single=true&output=csv";
 
-// Usar raw.githack como proxy para garantir CORS
-const PROXY_URL =
-  "https://cors.isomorphic-git.org/" + SHEET_URL;
-
-const fichaContainer = document.getElementById("ficha-container");
-const filtroTreino = document.getElementById("filtroTreino");
-
-let treinos = {};
+// Proxy para resolver CORS
+const PROXY_URL = "https://api.allorigins.win/raw?url=" + encodeURIComponent(SHEET_URL);
 
 async function carregarFicha() {
   try {
@@ -23,6 +17,8 @@ async function carregarFicha() {
       dynamicTyping: true,
       trimHeaders: true,
     });
+
+
 
     const rows = parsed.data;
 
