@@ -1,5 +1,10 @@
+// Link original do Sheets
 const SHEET_URL =
   "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ9b2FKBRe00ngdkBE8bSiC47MDdGJROwM-6FtxRy8htDIev5BZ5Z-SyxAXtz_2KzLxyHn-MiEcJaCj/pub?gid=784473971&single=true&output=csv";
+
+// Usar raw.githack como proxy para garantir CORS
+const PROXY_URL =
+  "https://cors.isomorphic-git.org/" + SHEET_URL;
 
 const fichaContainer = document.getElementById("ficha-container");
 const filtroTreino = document.getElementById("filtroTreino");
@@ -8,7 +13,8 @@ let treinos = {};
 
 async function carregarFicha() {
   try {
-    const res = await fetch(SHEET_URL);
+    const res = await fetch(PROXY_URL);
+    if (!res.ok) throw new Error("Falha no fetch: " + res.status);
     const csv = await res.text();
 
     const parsed = Papa.parse(csv, {
@@ -30,8 +36,9 @@ async function carregarFicha() {
     preencherFiltro();
     renderizarFicha();
   } catch (e) {
-    fichaContainer.innerHTML = "Erro ao carregar ficha 😢";
-    console.error("Erro no parsing:", e);
+    fichaContainer.innerHTML =
+      "Erro ao carregar ficha 😢<br><small>Verifique se a planilha está publicada corretamente</small>";
+    console.error("Erro no parsing/fetch:", e);
   }
 }
 
@@ -64,7 +71,6 @@ function renderizarFicha() {
         localStorage.getItem(`carga_${id}`) || ex["Carga (kg)"] || "";
       const concluido = localStorage.getItem(`done_${id}`) === "true";
 
-      // imagem dinâmica do Unsplash
       const imgUrl = `https://source.unsplash.com/400x300/?gym,${encodeURIComponent(
         nome
       )}`;
